@@ -28,7 +28,7 @@ function usage {
     exit 1
 }
 
-TEMP=$(getopt -o h --long "help,ibs,project:,obs,rebuild-base" -n 'build.sh' -- "$@")
+TEMP=$(getopt -o h --long "branch:,help,ibs,project:,obs,rebuild-base,repo:" -n 'build.sh' -- "$@")
 if [ $? != 0 ] ; then echo "Terminating..." >&2 ; exit 1 ; fi
 eval set -- "$TEMP"
 
@@ -41,10 +41,12 @@ REPO="https://github.com/ceph/ceph.git"
 while true ; do
     case "$1" in
         -h|--help) usage ;;    # does not return
+        --branch) shift ; BRANCH="$1" ; shift ;;
         --ibs) IBS="$1" ; OBS="" ; shift ;;
         --obs) OBS="$1" ; IBS="" ; shift ;;
         --project) shift ; PROJECT="$1" ; shift ;;
         --rebuild-base) REBUILD_BASE="$1" ; shift ;;
+        --repo) shift ; REPO="$1" ; shift ;;
         --) shift ; break ;;
         *) echo "Internal error" ; false ;;
     esac
