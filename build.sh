@@ -57,6 +57,7 @@ if [ "$REBUILD_BASE" ] ; then
         --tag make-rpm-base \
         --file ./Dockerfile-base \
         .
+    exit 0
 fi
 
 cp Dockerfile-rpm $DOCKERFILE

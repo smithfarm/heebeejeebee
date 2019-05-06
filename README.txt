@@ -29,10 +29,7 @@ How do I use this?
 ------------------
 
 I can't tell you that, but I'll give you a hint: Clone this repo. Change your
-working directory to the clone directory (i.e. "cd into the clone"). Copy your
-.oscrc file into the local clone using the command
-
-    cp ~/.oscrc ./oscrc
+working directory to the clone directory (i.e. "cd into the clone").
 
 Build the "make-rpm-base" container:
 
