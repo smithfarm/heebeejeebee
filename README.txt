@@ -41,3 +41,11 @@ Build the "make-rpm-base" container:
 Finally, run: 
 
     ./build.sh --help
+
+
+This @!*%#! filled up my disk!
+------------------------------
+
+Run:
+
+    docker system prune -f
