@@ -1,0 +1,32 @@
+FROM opensuse/leap:15.1
+LABEL maintainer="ncutler@suse.com"
+
+RUN zypper addrepo --refresh https://download.opensuse.org/repositories/openSUSE:/Tools/openSUSE_15.1/openSUSE:Tools.repo \
+    && zypper --non-interactive --gpg-auto-import-keys refresh \
+    && zypper --non-interactive update \
+    && zypper --non-interactive install --no-recommends \
+        osc \
+        bzip2 \
+        git-core \
+        tar \
+        wget \
+        python3-pip
+
+RUN useradd -m smithfarm
+COPY oscrc /home/smithfarm/.oscrc
+COPY alias /home/smithfarm/.alias
+COPY bashrc /home/smithfarm/.bashrc
+
+RUN chown smithfarm:users /home/smithfarm/.oscrc \
+    && chown smithfarm:users /home/smithfarm/.alias \
+    && chown smithfarm:users /home/smithfarm/.bashrc \
+    && chmod 600 /home/smithfarm/.oscrc \
+    && chmod 600 /home/smithfarm/.alias \
+    && chmod 700 /home/smithfarm/.bashrc
+
+USER smithfarm
+WORKDIR /home/smithfarm 
+
+RUN source ~/.bashrc \
+    && $oosc --version \
+    && $iosc --version
