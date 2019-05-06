@@ -61,8 +61,8 @@ fi
 
 cp Dockerfile-rpm $DOCKERFILE
 test "$BRANCH" && sed -i -e "s/((BRANCH))/$BRANCH/g" $DOCKERFILE
-test "$IBS" && sed -i -e 's/((BS))/$iosc/g' $DOCKERFILE
-test "$OBS" && sed -i -e 's/((BS))/$oosc/g' $DOCKERFILE
+test "$IBS" && sed -i -e 's/((OSC))/$iosc/g' $DOCKERFILE
+test "$OBS" && sed -i -e 's/((OSC))/$oosc/g' $DOCKERFILE
 test "$PROJECT" && sed -i -e "s/((PROJECT))/$PROJECT/g" $DOCKERFILE
 test "$REPO" && sed -i -e "s#((REPO))#$REPO#g" $DOCKERFILE
 
