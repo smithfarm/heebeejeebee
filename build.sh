@@ -5,6 +5,7 @@ sudo rm -rf ./tarball
 
 SCRIPTNAME=$(basename ${0})
 DOCKERFILE=$(mktemp)
+OUTPUTDIR=$HOME
 
 function cleanup {
     rm -f $DOCKERFILE
@@ -73,11 +74,10 @@ docker build \
     --file $DOCKERFILE \
     .
 
-docker run -v $(pwd):/mnt make-ceph-tarball:latest cp -a /home/smithfarm/tarball /mnt
+docker run -v $OUTPUTDIR:/mnt make-ceph-tarball:latest cp -a /home/smithfarm/$PROJECT /mnt
 
 rm -f $DOCKERFILE
 
-test -d ./tarball
-echo "New ceph tarball in ./tarball"
-ls -l ./tarball
-
+test -d $OUTPUTDIR/$PROJECT/ceph
+echo "New files in ${OUTPUTDIR}/${PROJECT}/ceph"
+ls -l ${OUTPUTDIR}/${PROJECT}/ceph

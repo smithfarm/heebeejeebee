@@ -5,6 +5,5 @@ RUN source ~/.bashrc \
     && echo "osc version: $(((OSC)) --version)" \
     && ((OSC)) co ((PROJECT)) ceph \
     && cd ((PROJECT))/ceph \
-    && sh checkin.sh --branch ((BRANCH)) \
-#    && ((OSC)) ci -m "Pushing new tarball - update changes file yourself" --no-service \
+    && sh checkin.sh --repo ((REPO)) --branch ((BRANCH)) \
     && true
