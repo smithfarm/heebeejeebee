@@ -12,7 +12,8 @@ RUN true \
         tar \
         wget \
         python3-pip \
-        sudo
+        sudo \
+        python3-virtualenv
 
 RUN useradd -m smithfarm \
     && echo "smithfarm ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
