@@ -72,6 +72,7 @@ if [ "$REBUILD_BASE" ] ; then
 fi
 
 # expand repo shortcuts
+# FIXME: use bash regex instead of perl here
 if [ "$(perl -e '"'"$REPO"'" =~ m/(^\w+$)/; print "$1\n";')" ] ; then
     REPO="https://github.com/$REPO/ceph.git"
 elif [ "$(perl -e '"'"$REPO"'" =~ m/(^\w+\/\w+$)/; print "$1\n";')" ] ; then
