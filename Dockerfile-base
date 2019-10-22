@@ -6,14 +6,15 @@ RUN true \
 #    && zypper --non-interactive --gpg-auto-import-keys refresh \
 #    && zypper --non-interactive update \
     && zypper --non-interactive install --no-recommends \
-        osc \
         bzip2 \
         git-core \
+        jq \
+        osc \
+        python3-pip \
+        python3-virtualenv \
         tar \
         wget \
-        python3-pip \
-        sudo \
-        python3-virtualenv
+        sudo
 
 RUN useradd -m smithfarm \
     && echo "smithfarm ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
