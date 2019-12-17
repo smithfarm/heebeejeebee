@@ -72,6 +72,10 @@ popd
 # /home/smithfarm/output/$PROJECT/ceph - this directory is associated
 # with the OUTPUTDIR from tarball.sh via "docker -v"
 #
-sudo rm -rf output/$PROJECT
-sudo mkdir output/$PROJECT
-sudo cp -a $PROJECT/ceph output/$PROJECT
+if [ -d output/$PROJECT ] ; then
+    echo "entrypoint.sh: /home/smithfarm/output/$PROJECT already exists - bailing out!"
+    exit 1
+else
+    sudo mkdir output/$PROJECT
+    sudo cp -a $PROJECT/ceph output/$PROJECT
+fi

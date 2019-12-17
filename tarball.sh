@@ -33,14 +33,15 @@ BRANCH="master"
 BUILD_SERVICE="OBS"
 IBS=""
 OBS="--obs"
+BS_OPT=""
 PROJECT="filesystems:ceph:octopus:upstream"
 REPO="https://github.com/ceph/ceph.git"
 while true ; do
     case "$1" in
         -h|--help) usage ;;    # does not return
         --branch) shift ; BRANCH="$1" ; shift ;;
-        --ibs) IBS="$1" ; OBS="" ; IBSOBS="$1" ; BUILD_SERVICE="IBS" ; shift ;;
-        --obs) OBS="$1" ; IBS="" ; IBSOBS="$1" ; BUILD_SERVICE="OBS" ; shift ;;
+        --ibs) IBS="$1" ; OBS="" ; BS_OPT="$1" ; BUILD_SERVICE="IBS" ; shift ;;
+        --obs) OBS="$1" ; IBS="" ; BS_OPT="$1" ; BUILD_SERVICE="OBS" ; shift ;;
         -o|--outputdir) shift ; OUTPUTDIR="$1" ; shift ;;
         --project) shift ; PROJECT="$1" ; shift ;;
         --repo) shift ; REPO="$1" ; shift ;;
@@ -58,12 +59,16 @@ echo "OUTPUTDIR     $OUTPUTDIR"
 echo "=============================================="
 
 set -x
-docker run -v "$OUTPUTDIR:/home/smithfarm/output" make-rpm-run:latest "$IBSOBS" "--project" $PROJECT --repo "$REPO" --branch "$BRANCH"
+sudo rm -rf $OUTPUTDIR/$PROJECT/ceph
+docker run \
+    -v "$OUTPUTDIR:/home/smithfarm/output" \
+    make-rpm-run:latest \
+    "$BS_OPT" --project "$PROJECT" --repo "$REPO" --branch "$BRANCH"
+ls -l $OUTPUTDIR/${PROJECT}/ceph
 set +x
 
 if [ -d $OUTPUTDIR/$PROJECT/ceph ] ; then
-    ls -l $OUTPUTDIR/${PROJECT}/ceph
-    echo "New files in $OUTPUTDIR/${PROJECT}/ceph"
+    echo "New content in $OUTPUTDIR/${PROJECT}/ceph"
     exit 0
 else
     echo "tarball.sh: failed to generate a new tarball"
