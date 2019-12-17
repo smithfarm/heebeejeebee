@@ -1,9 +1,0 @@
-FROM make-rpm-base:latest
-LABEL maintainer="ncutler@suse.com"
-
-RUN source ~/.bashrc \
-    && echo "osc version: $(((OSC)) --version)" \
-    && ((OSC)) co ((PROJECT)) ceph \
-    && cd ((PROJECT))/ceph \
-    && sh checkin.sh --repo ((REPO)) --branch ((BRANCH)) \
-    && true
