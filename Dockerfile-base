@@ -1,11 +1,13 @@
 FROM opensuse/leap:15.1
 LABEL maintainer="ncutler@suse.com"
 
+
 RUN true \
-#    zypper addrepo --refresh https://download.opensuse.org/repositories/openSUSE:/Tools/openSUSE_15.1/openSUSE:Tools.repo \
-#    && zypper --non-interactive --gpg-auto-import-keys refresh \
-#    && zypper --non-interactive update \
+    && zypper addrepo http://download.suse.de/ibs/SUSE:/CA/openSUSE_Leap_15.1/SUSE:CA.repo \
+#    && zypper addrepo https://download.opensuse.org/repositories/openSUSE:/Tools/openSUSE_15.1/openSUSE:Tools.repo
+    && zypper --non-interactive --gpg-auto-import-keys refresh \
     && zypper --non-interactive install --no-recommends \
+        ca-certificates-suse \
         bzip2 \
         git-core \
         jq \
@@ -20,20 +22,11 @@ RUN useradd -m smithfarm \
     && echo "smithfarm ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
 
 COPY oscrc /home/smithfarm/.oscrc
-COPY alias /home/smithfarm/.alias
-COPY bashrc /home/smithfarm/.bashrc
 
 RUN chown smithfarm:users /home/smithfarm/.oscrc \
-    && chown smithfarm:users /home/smithfarm/.alias \
-    && chown smithfarm:users /home/smithfarm/.bashrc \
-    && chmod 600 /home/smithfarm/.oscrc \
-    && chmod 600 /home/smithfarm/.alias \
-    && chmod 700 /home/smithfarm/.bashrc
+    && chmod 600 /home/smithfarm/.oscrc
 
 USER smithfarm
 WORKDIR /home/smithfarm 
 
-RUN source ~/.bashrc \
-    && echo "I am $(sudo whoami)!" \
-    && $oosc --version \
-    && $iosc --version
+RUN osc --version
