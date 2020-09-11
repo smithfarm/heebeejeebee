@@ -1,4 +1,4 @@
-FROM hbjb-base:latest
+FROM hbjb-base:obs
 LABEL maintainer="ncutler@suse.com"
 
 COPY entrypoint.sh /builder/entrypoint.sh

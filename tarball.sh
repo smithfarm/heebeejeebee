@@ -58,7 +58,7 @@ echo "BRANCH        $BRANCH"
 echo "OUTPUTDIR     $OUTPUTDIR"
 echo "=============================================="
 
-run_image="latest"
+run_image="obs"
 if [[ -n "$IBS" ]]; then
   run_image="ibs"
 fi

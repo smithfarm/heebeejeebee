@@ -48,7 +48,7 @@ if $do_base ; then
 
   $runtime build \
     --no-cache \
-    --tag hbjb-base:latest \
+    --tag hbjb-base:obs \
     --file ./Dockerfile-base || exit 1
 
   if $do_ibs ; then
@@ -62,8 +62,8 @@ fi
 if $do_run ; then
   $runtime build \
     --no-cache \
-    --tag hbjb-run:latest \
-    --file ./Dockerfile-run || exit 1
+    --tag hbjb-run:obs \
+    --file ./Dockerfile-run-obs || exit 1
 
   if $do_ibs ; then
     $runtime build \
