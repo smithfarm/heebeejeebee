@@ -60,7 +60,7 @@ fi
 
 echo "osc version: $($OSC --version)"
 
-# build tarball in /home/smithfarm/$PROJECT/ceph (inside the container)
+# build tarball in /builder/$PROJECT/ceph (inside the container)
 set -ex
 rm -rf $PROJECT/ceph
 $OSC co $PROJECT ceph
@@ -68,12 +68,12 @@ pushd $PROJECT/ceph
 bash checkin.sh --repo "$REPO" --branch "$BRANCH"
 popd
 
-# copy the tarball, etc. from /home/smithfarm/$PROJECT/ceph to
-# /home/smithfarm/output/$PROJECT/ceph - this directory is associated
+# copy the tarball, etc. from /builder/$PROJECT/ceph to
+# /builder/output/$PROJECT/ceph - this directory is associated
 # with the OUTPUTDIR from tarball.sh via "docker -v"
 #
 if [ -d output/$PROJECT ] ; then
-    echo "entrypoint.sh: /home/smithfarm/output/$PROJECT already exists - bailing out!"
+    echo "entrypoint.sh: /builder/output/$PROJECT already exists - bailing out!"
     exit 1
 else
     sudo mkdir output/$PROJECT

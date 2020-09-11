@@ -18,15 +18,16 @@ RUN zypper --non-interactive install --no-recommends \
         wget \
         sudo
 
-RUN useradd -m smithfarm \
-    && echo "smithfarm ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
+RUN mkdir /builder
+RUN useradd -m builder -d /builder
+RUN echo "builder ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
 
-COPY oscrc /home/smithfarm/.oscrc
+COPY oscrc /builder/.oscrc
 
-RUN chown smithfarm:users /home/smithfarm/.oscrc \
-    && chmod 600 /home/smithfarm/.oscrc
+RUN chown builder:users /builder/.oscrc
+RUN chmod 600 /builder/.oscrc
 
-USER smithfarm
-WORKDIR /home/smithfarm 
+USER builder
+WORKDIR /builder
 
 RUN osc --version

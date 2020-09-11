@@ -1,11 +1,11 @@
 FROM hbjb-base:latest
 LABEL maintainer="ncutler@suse.com"
 
-COPY entrypoint.sh /home/smithfarm/entrypoint.sh
+COPY entrypoint.sh /builder/entrypoint.sh
 
-USER smithfarm
-WORKDIR /home/smithfarm
+USER builder
+WORKDIR /builder
 
 RUN sudo chmod 755 entrypoint.sh
 
-ENTRYPOINT ["/home/smithfarm/entrypoint.sh"]
+ENTRYPOINT ["/builder/entrypoint.sh"]
