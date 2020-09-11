@@ -4,7 +4,6 @@ LABEL maintainer="ncutler@suse.com"
 
 
 RUN zypper addrepo http://download.suse.de/ibs/SUSE:/CA/openSUSE_Leap_15.1/SUSE:CA.repo
-#RUN zypper addrepo https://download.opensuse.org/repositories/openSUSE:/Tools/openSUSE_15.1/openSUSE:Tools.repo
 RUN zypper --non-interactive --gpg-auto-import-keys refresh
 RUN zypper --non-interactive install --no-recommends \
         ca-certificates-suse \
