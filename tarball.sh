@@ -67,6 +67,7 @@ set -x
 sudo rm -rf $OUTPUTDIR/$PROJECT/ceph
 docker run \
     -v "$OUTPUTDIR:/builder/output" \
+    -v "$(pwd)/bin:/builder/bin" \
     hbjb-run:${run_image} \
     "$BS_OPT" --project "$PROJECT" --repo "$REPO" --branch "$BRANCH"
 ls -l $OUTPUTDIR/${PROJECT}/ceph

@@ -1,11 +1,9 @@
 FROM hbjb-base:ibs
 LABEL maintainer="ncutler@suse.com"
 
-COPY entrypoint.sh /builder/entrypoint.sh
-
 USER builder
 WORKDIR /builder
 
-RUN sudo chmod 755 entrypoint.sh
 
-ENTRYPOINT ["/builder/entrypoint.sh"]
+VOLUME ["/builder/bin"]
+ENTRYPOINT ["/builder/bin/entrypoint.sh"]
