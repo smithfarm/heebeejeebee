@@ -62,7 +62,7 @@ set -x
 sudo rm -rf $OUTPUTDIR/$PROJECT/ceph
 docker run \
     -v "$OUTPUTDIR:/home/smithfarm/output" \
-    make-rpm-run:latest \
+    hbjb-run:latest \
     "$BS_OPT" --project "$PROJECT" --repo "$REPO" --branch "$BRANCH"
 ls -l $OUTPUTDIR/${PROJECT}/ceph
 set +x

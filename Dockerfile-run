@@ -1,4 +1,4 @@
-FROM make-rpm-base:latest
+FROM hbjb-base:latest
 LABEL maintainer="ncutler@suse.com"
 
 COPY entrypoint.sh /home/smithfarm/entrypoint.sh

@@ -19,7 +19,7 @@ fi
 if [ "$BASE" ] ; then
     docker build \
         --no-cache \
-        --tag make-rpm-base \
+        --tag hbjb-base \
         --file ./Dockerfile-base \
         .
 fi
@@ -27,7 +27,7 @@ fi
 if [ "$RUN" ] ; then
     docker build \
         --no-cache \
-        --tag make-rpm-run \
+        --tag hbjb-run \
         --file ./Dockerfile-run \
         .
 fi
