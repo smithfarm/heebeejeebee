@@ -49,13 +49,13 @@ if $do_base ; then
   $runtime build \
     --no-cache \
     --tag hbjb-base:obs \
-    --file ./Dockerfile-base || exit 1
+    --file ./images/base/Dockerfile-base . || exit 1
 
   if $do_ibs ; then
     $runtime build \
       --no-cache \
       --tag hbjb-base:ibs \
-      --file ./Dockerfile-base-ibs || exit 1
+      --file ./images/base/Dockerfile-base-ibs . || exit 1
   fi
 fi
 
@@ -63,13 +63,13 @@ if $do_run ; then
   $runtime build \
     --no-cache \
     --tag hbjb-run:obs \
-    --file ./Dockerfile-run-obs || exit 1
+    --file ./images/run/Dockerfile-run-obs . || exit 1
 
   if $do_ibs ; then
     $runtime build \
       --no-cache \
       --tag hbjb-run:ibs \
-      --file ./Dockerfile-run-ibs || exit 1
+      --file ./images/run/Dockerfile-run-ibs . || exit 1
   fi
 
 fi
