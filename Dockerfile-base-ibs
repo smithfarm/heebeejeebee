@@ -1,0 +1,7 @@
+# vim: ft=dockerfile
+FROM hbjb-base:latest
+LABEL maintainer="ncutler@suse.com"
+
+
+RUN zypper addrepo http://download.suse.de/ibs/SUSE:/CA/openSUSE_Leap_15.1/SUSE:CA.repo
+RUN zypper --non-interactive install --no-recommends ca-certificates-suse

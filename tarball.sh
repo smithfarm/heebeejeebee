@@ -58,11 +58,16 @@ echo "BRANCH        $BRANCH"
 echo "OUTPUTDIR     $OUTPUTDIR"
 echo "=============================================="
 
+run_image="latest"
+if [[ -n "$IBS" ]]; then
+  run_image="ibs"
+fi
+
 set -x
 sudo rm -rf $OUTPUTDIR/$PROJECT/ceph
 docker run \
     -v "$OUTPUTDIR:/builder/output" \
-    hbjb-run:latest \
+    hbjb-run:${run_image} \
     "$BS_OPT" --project "$PROJECT" --repo "$REPO" --branch "$BRANCH"
 ls -l $OUTPUTDIR/${PROJECT}/ceph
 set +x

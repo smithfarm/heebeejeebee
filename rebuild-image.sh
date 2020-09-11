@@ -1,33 +1,76 @@
 #!/bin/bash
 
-BASE=""
-RUN=""
-
-if [[ "$*" =~ "base" ]] ; then
-    echo "Will rebuild base and run container images"
-    BASE="yes"
-    RUN="yes"
-elif [[ "$*" =~ "run" ]] ; then
-    echo "Will rebuild run container image"
-    RUN="yes"
-else
-    echo "Will rebuild both base and run container images"
-    BASE="yes"
-    RUN="yes"
+runtime=docker
+if which podman ; then
+  runtime=podman
 fi
 
-if [ "$BASE" ] ; then
-    docker build \
-        --no-cache \
-        --tag hbjb-base \
-        --file ./Dockerfile-base \
-        .
+if ! which $runtime ; then
+  echo "can't find binary for $runtime in path"
+  exit 1
 fi
 
-if [ "$RUN" ] ; then
-    docker build \
-        --no-cache \
-        --tag hbjb-run \
-        --file ./Dockerfile-run \
-        .
+
+usage() {
+  cat << EOF
+usage: $0 [base | run] [--ibs]
+
+options:
+  base       builds only base images
+  run        builds only run image
+  --ibs      whatever is built, also builds for IBS.
+  -h|--help  this message.
+
+Note that building images without specifying '--ibs' means that only OBS
+images will be built. This default is for the benefit of those without access
+to SUSE's internal network/vpn.
+EOF
+
+}
+
+do_base=true
+do_run=true
+do_ibs=false
+
+
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    base) do_base=true ; do_run=false ;;
+    run) do_base=false; do_run=true ;;
+    --ibs) do_ibs=true ;;
+    --help|-h) usage ; exit 0 ;;
+    *) usage ; exit 1 ;;
+  esac
+  shift 1
+done
+
+if $do_base ; then
+
+  $runtime build \
+    --no-cache \
+    --tag hbjb-base:latest \
+    --file ./Dockerfile-base || exit 1
+
+  if $do_ibs ; then
+    $runtime build \
+      --no-cache \
+      --tag hbjb-base:ibs \
+      --file ./Dockerfile-base-ibs || exit 1
+  fi
 fi
+
+if $do_run ; then
+  $runtime build \
+    --no-cache \
+    --tag hbjb-run:latest \
+    --file ./Dockerfile-run || exit 1
+
+  if $do_ibs ; then
+    $runtime build \
+      --no-cache \
+      --tag hbjb-run:ibs \
+      --file ./Dockerfile-run-ibs || exit 1
+  fi
+
+fi
+

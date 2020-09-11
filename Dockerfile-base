@@ -3,10 +3,8 @@ FROM opensuse/leap:15.1
 LABEL maintainer="ncutler@suse.com"
 
 
-RUN zypper addrepo http://download.suse.de/ibs/SUSE:/CA/openSUSE_Leap_15.1/SUSE:CA.repo
 RUN zypper --non-interactive --gpg-auto-import-keys refresh
 RUN zypper --non-interactive install --no-recommends \
-        ca-certificates-suse \
         bzip2 \
         git-core \
         jq \
