@@ -1,0 +1,22 @@
+# vim: ft=dockerfile
+FROM opensuse/leap:15.1
+LABEL maintainer="ncutler@suse.com"
+
+
+RUN zypper --non-interactive --gpg-auto-import-keys refresh
+RUN zypper --non-interactive install --no-recommends \
+        bzip2 \
+        git-core \
+        jq \
+        osc \
+        python3-pip \
+        python3-virtualenv \
+        tar \
+        wget \
+        sudo
+
+RUN useradd -m builder -d /builder
+RUN echo "builder ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
+
+USER builder
+WORKDIR /builder

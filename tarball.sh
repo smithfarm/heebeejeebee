@@ -4,6 +4,13 @@ SCRIPTNAME=$(basename ${0})
 OUTPUTDIR="/home/$(logname)"
 test -d "$OUTPUTDIR" || OUTPUTDIR="$HOME"
 
+runtime=docker
+runtime_opts=""
+if which podman >&/dev/null; then
+  runtime=podman
+  runtime_opts="--userns=keep-id"
+fi
+
 function usage {
     echo "$SCRIPTNAME - generate ceph tarballs using Dockerfiles"
     echo
@@ -13,8 +20,10 @@ function usage {
     echo "    --ibs           Use IBS"
     echo "    --obs           Use OBS (the default)"
     echo "    --outputdir     Directory under which to create the target osc checkout (defaults to \"$OUTPUTDIR\")"
+    echo "    --package       Project package (defaults to \"ceph\")"
     echo "    --project       IBS/OBS project (defaults to \"filesystems:ceph:octopus:upstream\")"
     echo "    --repo          Repo to pass to checkin.sh (defaults to \"https://github.com/ceph/ceph.git\")"
+    echo "    --host-tmp      Use host's tmp for checkin.sh's build"
     echo
     echo "Note: in addition to a full URL, the --repo option understands shortcuts:"
     echo
@@ -25,7 +34,24 @@ function usage {
     exit 1
 }
 
-TEMP=$(getopt -o ho: --long "branch:,help,ibs,outputdir:,project:,obs,repo:" -n 'build.sh' -- "$@")
+
+find_oscrc() {
+
+  if [[ -e "./oscrc" ]]; then
+    echo "$(realpath ./oscrc)"
+  elif [[ -e "${HOME}/.oscrc" ]]; then
+    echo "$(realpath ${HOME}/.oscrc)"
+  elif [[ -e "${HOME}/.config/osc/oscrc" ]]; then
+    echo "$(realpath ${HOME}/.config/osc/oscrc)"
+  else
+    echo ""
+  fi
+}
+
+
+TEMP=$(getopt -o ho: \
+  --long "branch:,help,ibs,outputdir:,project:,obs,repo:,package:,host-tmp" \
+  -n 'build.sh' -- "$@")
 if [ $? != 0 ] ; then echo "Terminating..." >&2 ; exit 1 ; fi
 eval set -- "$TEMP"
 
@@ -34,8 +60,12 @@ BUILD_SERVICE="OBS"
 IBS=""
 OBS="--obs"
 BS_OPT=""
+PACKAGE="ceph"
 PROJECT="filesystems:ceph:octopus:upstream"
 REPO="https://github.com/ceph/ceph.git"
+
+do_with_host_tmp=false
+
 while true ; do
     case "$1" in
         -h|--help) usage ;;    # does not return
@@ -43,31 +73,61 @@ while true ; do
         --ibs) IBS="$1" ; OBS="" ; BS_OPT="$1" ; BUILD_SERVICE="IBS" ; shift ;;
         --obs) OBS="$1" ; IBS="" ; BS_OPT="$1" ; BUILD_SERVICE="OBS" ; shift ;;
         -o|--outputdir) shift ; OUTPUTDIR="$1" ; shift ;;
+        --package) shift ; PACKAGE="$1" ; shift ;;
         --project) shift ; PROJECT="$1" ; shift ;;
         --repo) shift ; REPO="$1" ; shift ;;
+        --host-tmp) do_with_host_tmp=true ; shift ;;
         --) shift ; break ;;
         *) echo "Internal error" ; false ;;
     esac
 done
 
+oscrc=$(find_oscrc)
+if [[ -z "${oscrc}" ]]; then
+  echo "error: unable to find a viable osc config file"
+  exit 1
+fi
+
 echo "=============================================="
 echo "BUILD_SERVICE $BUILD_SERVICE"
+echo "PACKAGE       $PACKAGE"
 echo "PROJECT       $PROJECT"
 echo "REPO          $REPO"
 echo "BRANCH        $BRANCH" 
 echo "OUTPUTDIR     $OUTPUTDIR"
+echo "OSC CONFIG    ${oscrc}"
 echo "=============================================="
 
+run_image="obs"
+if [[ -n "$IBS" ]]; then
+  run_image="ibs"
+fi
+
+additional_args=""
+if $do_with_host_tmp ; then
+  tmp_dir=$(mktemp -d)
+  additional_args+="-v $tmp_dir:/tmp"
+fi
+
 set -x
-sudo rm -rf $OUTPUTDIR/$PROJECT/ceph
-docker run \
-    -v "$OUTPUTDIR:/home/smithfarm/output" \
-    make-rpm-run:latest \
-    "$BS_OPT" --project "$PROJECT" --repo "$REPO" --branch "$BRANCH"
-ls -l $OUTPUTDIR/${PROJECT}/ceph
+rm -rf $OUTPUTDIR/$PROJECT/$PACKAGE
+$runtime run $runtime_opts \
+    -v "$OUTPUTDIR:/builder/output" \
+    -v "${oscrc}:/builder/.oscrc" \
+    -v "$(pwd)/bin:/builder/bin" \
+    ${additional_args} \
+    hbjb-run:${run_image} \
+    "$BS_OPT" --project "$PROJECT" --repo "$REPO" --branch "$BRANCH" \
+    --package $PACKAGE
+
+if $do_with_host_tmp ; then
+  rm -fr $tmp_dir
+fi
+
+ls -l $OUTPUTDIR/${PROJECT}/$PACKAGE
 set +x
 
-if [ -d $OUTPUTDIR/$PROJECT/ceph ] ; then
+if [ -d $OUTPUTDIR/$PROJECT/$PACKAGE ] ; then
     echo "New content in $OUTPUTDIR/${PROJECT}/ceph"
     exit 0
 else

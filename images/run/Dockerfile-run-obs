@@ -1,0 +1,8 @@
+FROM hbjb-base:obs
+LABEL maintainer="ncutler@suse.com"
+
+USER builder
+WORKDIR /builder
+
+VOLUME ["/builder/bin", "/builder/.oscrc"]
+ENTRYPOINT ["/builder/bin/entrypoint.sh"]
