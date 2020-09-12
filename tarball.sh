@@ -4,6 +4,11 @@ SCRIPTNAME=$(basename ${0})
 OUTPUTDIR="/home/$(logname)"
 test -d "$OUTPUTDIR" || OUTPUTDIR="$HOME"
 
+runtime=docker
+if which podman >&/dev/null; then
+  runtime=podman
+fi
+
 function usage {
     echo "$SCRIPTNAME - generate ceph tarballs using Dockerfiles"
     echo
@@ -65,7 +70,7 @@ fi
 
 set -x
 sudo rm -rf $OUTPUTDIR/$PROJECT/ceph
-docker run \
+$runtime run --userns=keep-id \
     -v "$OUTPUTDIR:/builder/output" \
     -v "$(pwd)/bin:/builder/bin" \
     hbjb-run:${run_image} \
