@@ -20,6 +20,7 @@ function usage {
     echo "    --ibs           Use IBS"
     echo "    --obs           Use OBS (the default)"
     echo "    --outputdir     Directory under which to create the target osc checkout (defaults to \"$OUTPUTDIR\")"
+    echo "    --package       Project package (defaults to \"ceph\")"
     echo "    --project       IBS/OBS project (defaults to \"filesystems:ceph:octopus:upstream\")"
     echo "    --repo          Repo to pass to checkin.sh (defaults to \"https://github.com/ceph/ceph.git\")"
     echo
@@ -47,7 +48,9 @@ find_oscrc() {
 }
 
 
-TEMP=$(getopt -o ho: --long "branch:,help,ibs,outputdir:,project:,obs,repo:" -n 'build.sh' -- "$@")
+TEMP=$(getopt -o ho: \
+  --long "branch:,help,ibs,outputdir:,project:,obs,repo:,package:" \
+  -n 'build.sh' -- "$@")
 if [ $? != 0 ] ; then echo "Terminating..." >&2 ; exit 1 ; fi
 eval set -- "$TEMP"
 
@@ -56,6 +59,7 @@ BUILD_SERVICE="OBS"
 IBS=""
 OBS="--obs"
 BS_OPT=""
+PACKAGE="ceph"
 PROJECT="filesystems:ceph:octopus:upstream"
 REPO="https://github.com/ceph/ceph.git"
 while true ; do
@@ -65,6 +69,7 @@ while true ; do
         --ibs) IBS="$1" ; OBS="" ; BS_OPT="$1" ; BUILD_SERVICE="IBS" ; shift ;;
         --obs) OBS="$1" ; IBS="" ; BS_OPT="$1" ; BUILD_SERVICE="OBS" ; shift ;;
         -o|--outputdir) shift ; OUTPUTDIR="$1" ; shift ;;
+        --package) shift ; PACKAGE="$1" ; shift ;;
         --project) shift ; PROJECT="$1" ; shift ;;
         --repo) shift ; REPO="$1" ; shift ;;
         --) shift ; break ;;
@@ -80,6 +85,7 @@ fi
 
 echo "=============================================="
 echo "BUILD_SERVICE $BUILD_SERVICE"
+echo "PACKAGE       $PACKAGE"
 echo "PROJECT       $PROJECT"
 echo "REPO          $REPO"
 echo "BRANCH        $BRANCH" 
@@ -93,17 +99,19 @@ if [[ -n "$IBS" ]]; then
 fi
 
 set -x
-sudo rm -rf $OUTPUTDIR/$PROJECT/ceph
+rm -rf $OUTPUTDIR/$PROJECT/$PACKAGE
 $runtime run $runtime_opts \
     -v "$OUTPUTDIR:/builder/output" \
     -v "${oscrc}:/builder/.oscrc" \
     -v "$(pwd)/bin:/builder/bin" \
     hbjb-run:${run_image} \
-    "$BS_OPT" --project "$PROJECT" --repo "$REPO" --branch "$BRANCH"
-ls -l $OUTPUTDIR/${PROJECT}/ceph
+    "$BS_OPT" --project "$PROJECT" --repo "$REPO" --branch "$BRANCH" \
+    --package $PACKAGE
+
+ls -l $OUTPUTDIR/${PROJECT}/$PACKAGE
 set +x
 
-if [ -d $OUTPUTDIR/$PROJECT/ceph ] ; then
+if [ -d $OUTPUTDIR/$PROJECT/$PACKAGE ] ; then
     echo "New content in $OUTPUTDIR/${PROJECT}/ceph"
     exit 0
 else
