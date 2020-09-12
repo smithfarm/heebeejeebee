@@ -63,7 +63,17 @@ elif [ "$(perl -e '"'"$REPO"'" =~ m/(^\w+\/\w+$)/; print "$1\n";')" ] ; then
     REPO="https://github.com/$REPO.git"
 fi
 
-echo "osc version: $($OSC --version)"
+
+cat <<EOF
+------------------------
+osc version:  $($OSC --version)
+    project:  $PROJECT
+    package:  $PACKAGE
+       repo:  $REPO
+     branch:  $BRANCH
+------------------------
+EOF
+
 
 # build tarball in /builder/$PROJECT/ceph (inside the container)
 set -ex
