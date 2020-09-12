@@ -15,7 +15,6 @@ RUN zypper --non-interactive install --no-recommends \
         wget \
         sudo
 
-RUN mkdir /builder
 RUN useradd -m builder -d /builder
 RUN echo "builder ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
 
