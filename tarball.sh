@@ -23,6 +23,7 @@ function usage {
     echo "    --package       Project package (defaults to \"ceph\")"
     echo "    --project       IBS/OBS project (defaults to \"filesystems:ceph:octopus:upstream\")"
     echo "    --repo          Repo to pass to checkin.sh (defaults to \"https://github.com/ceph/ceph.git\")"
+    echo "    --host-tmp      Use host's tmp for checkin.sh's build"
     echo
     echo "Note: in addition to a full URL, the --repo option understands shortcuts:"
     echo
@@ -49,7 +50,7 @@ find_oscrc() {
 
 
 TEMP=$(getopt -o ho: \
-  --long "branch:,help,ibs,outputdir:,project:,obs,repo:,package:" \
+  --long "branch:,help,ibs,outputdir:,project:,obs,repo:,package:,host-tmp" \
   -n 'build.sh' -- "$@")
 if [ $? != 0 ] ; then echo "Terminating..." >&2 ; exit 1 ; fi
 eval set -- "$TEMP"
@@ -62,6 +63,9 @@ BS_OPT=""
 PACKAGE="ceph"
 PROJECT="filesystems:ceph:octopus:upstream"
 REPO="https://github.com/ceph/ceph.git"
+
+do_with_host_tmp=false
+
 while true ; do
     case "$1" in
         -h|--help) usage ;;    # does not return
@@ -72,6 +76,7 @@ while true ; do
         --package) shift ; PACKAGE="$1" ; shift ;;
         --project) shift ; PROJECT="$1" ; shift ;;
         --repo) shift ; REPO="$1" ; shift ;;
+        --host-tmp) do_with_host_tmp=true ; shift ;;
         --) shift ; break ;;
         *) echo "Internal error" ; false ;;
     esac
@@ -98,15 +103,26 @@ if [[ -n "$IBS" ]]; then
   run_image="ibs"
 fi
 
+additional_args=""
+if $do_with_host_tmp ; then
+  tmp_dir=$(mktemp -d)
+  additional_args+="-v $tmp_dir:/tmp"
+fi
+
 set -x
 rm -rf $OUTPUTDIR/$PROJECT/$PACKAGE
 $runtime run $runtime_opts \
     -v "$OUTPUTDIR:/builder/output" \
     -v "${oscrc}:/builder/.oscrc" \
     -v "$(pwd)/bin:/builder/bin" \
+    ${additional_args} \
     hbjb-run:${run_image} \
     "$BS_OPT" --project "$PROJECT" --repo "$REPO" --branch "$BRANCH" \
     --package $PACKAGE
+
+if $do_with_host_tmp ; then
+  rm -fr $tmp_dir
+fi
 
 ls -l $OUTPUTDIR/${PROJECT}/$PACKAGE
 set +x
