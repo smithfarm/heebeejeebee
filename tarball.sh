@@ -5,8 +5,10 @@ OUTPUTDIR="/home/$(logname)"
 test -d "$OUTPUTDIR" || OUTPUTDIR="$HOME"
 
 runtime=docker
+runtime_opts=""
 if which podman >&/dev/null; then
   runtime=podman
+  runtime_opts="--userns=keep-id"
 fi
 
 function usage {
@@ -92,7 +94,7 @@ fi
 
 set -x
 sudo rm -rf $OUTPUTDIR/$PROJECT/ceph
-$runtime run --userns=keep-id \
+$runtime run $runtime_opts \
     -v "$OUTPUTDIR:/builder/output" \
     -v "${oscrc}:/builder/.oscrc" \
     -v "$(pwd)/bin:/builder/bin" \
