@@ -1,9 +1,9 @@
 #!/bin/bash
 
 export LANG=en_US.UTF-8
-OSC=""
 OOSC="osc -A https://api.opensuse.org/"
 IOSC="osc -A https://api.suse.de/"
+OSC="$OOSC"
 SCRIPTNAME=$(basename ${0})
 
 function usage {
