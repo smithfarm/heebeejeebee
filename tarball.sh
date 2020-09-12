@@ -30,6 +30,21 @@ function usage {
     exit 1
 }
 
+
+find_oscrc() {
+
+  if [[ -e "./oscrc" ]]; then
+    echo "$(realpath ./oscrc)"
+  elif [[ -e "${HOME}/.oscrc" ]]; then
+    echo "$(realpath ${HOME}/.oscrc)"
+  elif [[ -e "${HOME}/.config/osc/oscrc" ]]; then
+    echo "$(realpath ${HOME}/.config/osc/oscrc)"
+  else
+    echo ""
+  fi
+}
+
+
 TEMP=$(getopt -o ho: --long "branch:,help,ibs,outputdir:,project:,obs,repo:" -n 'build.sh' -- "$@")
 if [ $? != 0 ] ; then echo "Terminating..." >&2 ; exit 1 ; fi
 eval set -- "$TEMP"
@@ -55,12 +70,19 @@ while true ; do
     esac
 done
 
+oscrc=$(find_oscrc)
+if [[ -z "${oscrc}" ]]; then
+  echo "error: unable to find a viable osc config file"
+  exit 1
+fi
+
 echo "=============================================="
 echo "BUILD_SERVICE $BUILD_SERVICE"
 echo "PROJECT       $PROJECT"
 echo "REPO          $REPO"
 echo "BRANCH        $BRANCH" 
 echo "OUTPUTDIR     $OUTPUTDIR"
+echo "OSC CONFIG    ${oscrc}"
 echo "=============================================="
 
 run_image="obs"
@@ -72,6 +94,7 @@ set -x
 sudo rm -rf $OUTPUTDIR/$PROJECT/ceph
 $runtime run --userns=keep-id \
     -v "$OUTPUTDIR:/builder/output" \
+    -v "${oscrc}:/builder/.oscrc" \
     -v "$(pwd)/bin:/builder/bin" \
     hbjb-run:${run_image} \
     "$BS_OPT" --project "$PROJECT" --repo "$REPO" --branch "$BRANCH"

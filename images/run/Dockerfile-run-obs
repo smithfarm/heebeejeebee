@@ -4,5 +4,5 @@ LABEL maintainer="ncutler@suse.com"
 USER builder
 WORKDIR /builder
 
-VOLUME ["/builder/bin"]
+VOLUME ["/builder/bin", "/builder/.oscrc"]
 ENTRYPOINT ["/builder/bin/entrypoint.sh"]

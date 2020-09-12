@@ -19,12 +19,5 @@ RUN mkdir /builder
 RUN useradd -m builder -d /builder
 RUN echo "builder ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
 
-COPY oscrc /builder/.oscrc
-
-RUN chown builder:users /builder/.oscrc
-RUN chmod 600 /builder/.oscrc
-
 USER builder
 WORKDIR /builder
-
-RUN osc --version
