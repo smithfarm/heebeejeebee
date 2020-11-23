@@ -15,6 +15,7 @@ RUN true \
         python3-pip \
         python3-virtualenv \
         tar \
+        gzip \
         wget \
         sudo
 
