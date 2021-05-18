@@ -27,7 +27,7 @@ function usage {
     exit 1
 }
 
-TEMP=$(getopt -o h --long "branch:,help,ibs,project:,obs,rebuild-base,repo:" -n 'entrypoint.sh' -- "$@")
+TEMP=$(getopt -o h --long "branch:,help,ibs,obs,project:,repo:" -n 'entrypoint.sh' -- "$@")
 if [ $? != 0 ] ; then echo "Terminating..." >&2 ; exit 1 ; fi
 eval set -- "$TEMP"
 
