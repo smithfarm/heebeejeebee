@@ -1,10 +1,13 @@
 #!/bin/bash
 
 export LANG=en_US.UTF-8
-OOSC="osc -A https://api.opensuse.org/"
-IOSC="osc -A https://api.suse.de/"
+SCRIPTNAME="$(basename "${0}")"
+BRANCH="master"
+IOSC="osc --no-keyring --no-gnome-keyring -A https://api.suse.de"
+OOSC="osc --no-keyring --no-gnome-keyring -A https://api.opensuse.org"
 OSC="$OOSC"
-SCRIPTNAME=$(basename ${0})
+PROJECT="filesystems:ceph:master:upstream"
+REPO="https://github.com/ceph/ceph.git"
 
 function usage {
     set +x
@@ -27,51 +30,89 @@ function usage {
     exit 1
 }
 
-TEMP=$(getopt -o h --long "branch:,help,ibs,obs,project:,repo:" -n 'entrypoint.sh' -- "$@")
-if [ $? != 0 ] ; then echo "Terminating..." >&2 ; exit 1 ; fi
+function error_exit {
+    local message="$1"
+    echo "($SCRIPTNAME) ERROR: $message"
+    exit 1
+}
+
+set -e
+TEMP=$(getopt -o h --long "help,branch:,ibs,obs,project:,repo:" -n 'entrypoint.sh' -- "$@")
+set +e
 eval set -- "$TEMP"
 
-BRANCH="master"
-BUILD_SERVICE="OBS"
-IBS=""
-OBS="--obs"
-PROJECT="filesystems:ceph:master:upstream"
-REPO="https://github.com/ceph/ceph.git"
+set -x
 while true ; do
+    echo "$*"
     case "$1" in
-        -h|--help) usage ;;    # does not return
-        --branch) shift ; BRANCH="$1" ; shift ;;
-        --ibs) IBS="$1" ; OBS="" ; OSC="$IOSC" ; BUILD_SERVICE="IBS" ; shift ;;
-        --obs) OBS="$1" ; IBS="" ; OSC="$OOSC" ; BUILD_SERVICE="OBS" ; shift ;;
-        --project) shift ; PROJECT="$1" ; shift ;;
-        --repo) shift ; REPO="$1" ; shift ;;
-        --) shift ; break ;;
-        *) echo "Internal error" ; false ;;
+        -h|--help)
+            usage
+            ;;            # does not return
+        --branch)
+            BRANCH="$2"
+            shift 2
+            continue
+            ;;
+        --ibs)
+            OSC="$IOSC"
+            shift
+            continue
+            ;;
+        --obs)
+            shift
+            continue
+            ;;
+        --project)
+            PROJECT="$2"
+            shift 2
+            continue
+            ;;
+        --repo)
+            REPO="$2"
+            shift 2
+            continue
+            ;;
+        --)
+            shift
+            break
+            ;;
+        *)
+            error_exit "(internal) Failed to process command-line arguments!"
+            ;;    # does not return
     esac
 done
 
 # expand repo shortcuts
-# FIXME: use bash regex instead of perl here
+# FIXME: use bash regex instead of perl here (?)
 if [ "$(perl -e '"'"$REPO"'" =~ m/(^\w+$)/; print "$1\n";')" ] ; then
     REPO="https://github.com/$REPO/ceph.git"
 elif [ "$(perl -e '"'"$REPO"'" =~ m/(^\w+\/\w+$)/; print "$1\n";')" ] ; then
     REPO="https://github.com/$REPO.git"
 fi
 
-echo "osc version: $($OSC --version)"
-
-# build tarball in /home/smithfarm/$PROJECT/ceph (inside the container)
+# make sure we are in /root and not somewhere silly like /
 set -ex
-rm -rf $PROJECT/ceph
-$OSC co $PROJECT ceph
-pushd $PROJECT/ceph
+test -d /root
+cd /root
+
+# expect to find our .oscrc all ready to go
+test -d /root/heebeejeebee
+test -f /root/heebeejeebee/.oscrc
+cp /root/heebeejeebee/.oscrc /root
+chmod 600 /root/.oscrc
+file /root/.oscrc
+
+$OSC --version
+
+# build tarball
+rm -rf "$PROJECT/ceph"
+$OSC co "$PROJECT" ceph
+pushd "$PROJECT/ceph"
 bash checkin.sh --repo "$REPO" --branch "$BRANCH"
 popd
 
-# copy the tarball, etc. from /home/smithfarm/$PROJECT/ceph to
-# /home/smithfarm/output/$PROJECT/ceph - this directory is associated
-# with the OUTPUTDIR from tarball.sh via "docker -v"
-#
-sudo rm -rf output/$PROJECT
-sudo mkdir output/$PROJECT
-sudo cp -a $PROJECT/ceph output/$PROJECT
+# copy the tarball, etc. from /root/$PROJECT/ceph to /root/output/$PROJECT/ceph
+# for consumption outside the container
+rm -rf "output/$PROJECT"
+mkdir "output/$PROJECT"
+cp -a "$PROJECT/ceph" "output/$PROJECT"
